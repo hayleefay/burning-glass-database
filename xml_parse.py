@@ -6,7 +6,7 @@ path = '/export/projects2/rsadun_burning_glass_project/Burning Glass Data/Text D
 years = ['2007/', '2010/', '2011/', '2012/', '2013/', '2014/', '2015/', '2016/', '2017/', 
          '2018/', '2018_ongoing/', '2019/', '2020/']
 
-with open(path + 'outfile', 'wt') as out:
+with open('outfile', 'wt') as out:
     for year in years:
         print(year)
         for filename in os.listdir(path + year):
