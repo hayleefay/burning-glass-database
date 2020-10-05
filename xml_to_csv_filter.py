@@ -4,8 +4,8 @@ import os
 import pandas as pd
 import csv
 
-path = '/Users/hayleeham/Documents/burning-glass-database/data/'
-years = ['2018/', '2018_ongoing/', '2019/', '2020/']
+path = '/export/projects2/rsadun_burning_glass_project/Burning Glass Data/Text Data/'
+years = ['2015/', '2016/', '2017/', '2018/', '2019/', '2020/']
 fields = set(['CanonEmployer', 'JobURL', 'CanonYearsOfExperienceLevel', 'ConsolidatedONET', 
              'MaxDegreeLevel', 'IsDuplicate', 'CanonOtherDegrees', 'CanonRequiredDegrees', 
              'Telephone', 'JobText', 'MinDegreeLevel', 'CanonPostalCode', 'StandardMajor', 
@@ -35,9 +35,9 @@ fields_list = ["JobID", "CleanJobTitle", "JobDomain", "CanonCity", "CanonCountry
                "rr_company_2", "rr_company_3", "rr_company_4", "rr_company_5"]
 
 # read in all of the matches and group by
-df1 = pd.read_csv("/Users/hayleeham/Documents/burning-glass-database/matches/matches_rr2_2007_present_MZ.csv")
-df2 = pd.read_csv("/Users/hayleeham/Documents/burning-glass-database/matches/matches_rr1_2018_present_MZ.csv")
-df3 = pd.read_csv("/Users/hayleeham/Documents/burning-glass-database/matches/matches_rr1_2007_2017.csv")
+df1 = pd.read_csv("/export/projects2/rsadun_burning_glass_project/burning-glass-database/matches/matches_rr2_2007_present_MZ.csv")
+df2 = pd.read_csv("/export/projects2/rsadun_burning_glass_project/burning-glass-database/matches/matches_rr1_2018_present_MZ.csv")
+df3 = pd.read_csv("/export/projects2/rsadun_burning_glass_project/burning-glass-database/matches/matches_rr1_2007_2017.csv")
 df_master = df1.append(df2)
 df_master = df_master.append(df3)
 dfg = df_master.groupby('company_2').agg(list)
@@ -48,15 +48,19 @@ print('All matches read in', flush=True)
 def dict_to_csv_row(job_dict, csvwriter, csvfile):
     row = []
     if 'CanonEmployer' in job_dict and job_dict['CanonEmployer'] in companies_set:
-        for field in fields_list:
+        for field in fields_list[:-5]:
             if field in job_dict:
                 row.append(job_dict[field])
             else:
                 row.append(None)
         
         for company in dfg.loc[job_dict['CanonEmployer']]['company_1']:
-            row.append(company)
-        
+            row.append(company) 
+       
+        if len(dfg.loc[job_dict['CanonEmployer']]['company_1']) < 5:
+            for i in range(5-len(dfg.loc[job_dict['CanonEmployer']]['company_1'])):
+                row.append(None) 
+       
         csvwriter.writerow(row)
         csvfile.flush()
     
@@ -65,15 +69,15 @@ def dict_to_csv_row(job_dict, csvwriter, csvfile):
 
 
 
-csvfilename = "rr_burning_glass.csv"
-with open(csvfilename, 'w', newline='') as csvfile:
-    csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
-    csvwriter.writerow(fields_list)
-    csvfile.flush()
-    print('Header written', flush=True)
+for year in years:
+    print(year)
+    csvfilename = "rr_burning_glass_" + year[:-1] + ".csv"
+    with open(csvfilename, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
+        csvwriter.writerow(fields_list)
+        csvfile.flush()
+        print('Header written', flush=True)
 
-    for year in years:
-        print(year)
         for filename in os.listdir(path + year):
             print(filename)
             zf = zipfile.ZipFile(path + year + filename)
